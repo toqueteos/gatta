@@ -1,8 +1,8 @@
 package gatta
 
 import (
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -26,7 +26,7 @@ func New(key string) (*Translator, error) {
 	}
 
 	if err := tr.getToken(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Translator.getToken error %v", err)
 	}
 
 	return tr, nil
@@ -37,23 +37,23 @@ func (t *Translator) getToken() error {
 	req, err := http.NewRequest(http.MethodPost, TokenURL, nil)
 	req.Header.Add("Ocp-Apim-Subscription-Key", t.key)
 	if err != nil {
-		return err
+		return fmt.Errorf("http.NewRequest error %v", err)
 	}
 
 	resp, err := t.client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("client.Do error %v", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("ioutil.ReadAll %v", err)
 	}
 
 	t.token = string(body)
-	log.Println("token", t.token)
+	// log.Println("token", t.token)
 	return nil
 }
 
@@ -62,23 +62,25 @@ func (t *Translator) getToken() error {
 func (t *Translator) Translate(text, to string) (*http.Response, error) {
 	u, err := url.Parse(TranslateURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("url.Parse error %v", err)
 	}
 	q := u.Query()
 	q.Add("text", text)
 	q.Add("to", to)
 	u.RawQuery = q.Encode()
 
+	// log.Println("url", u.String())
+
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	req.Header.Add("Authorization", "Bearer "+t.token)
 	req.Header.Add("Accept", "application/xml")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http.NewRequest error %v", err)
 	}
 
 	resp, err := t.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("client.Do error %v", err)
 	}
 	return resp, nil
 }

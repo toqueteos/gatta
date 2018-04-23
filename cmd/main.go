@@ -32,13 +32,15 @@ func main() {
 	body, err := ioutil.ReadAll(resp.Body)
 	fatalIf(err)
 
-	fmt.Println("result", body)
+	fmt.Println(string(body))
 }
 
 func fatalIf(err error) {
-	file, line := caller()
-	fmt.Println(file, line, err)
-	os.Exit(1)
+	if err != nil {
+		file, line := caller()
+		fmt.Println(file, line, err)
+		os.Exit(1)
+	}
 }
 
 func caller() (file string, line int) {
