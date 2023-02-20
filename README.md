@@ -1,3 +1,3 @@
 # gatta
 
-Go library for Azure's Translator Text API
+Simple Go command that uses Azure's Translator Text API
